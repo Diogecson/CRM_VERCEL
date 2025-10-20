@@ -1,0 +1,25 @@
+# Excluir arquivos locais e pesados do pacote de deploy
+# Banco local (não persiste no Vercel)
+base.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Dados
+data/
+*.csv
+*.xlsx
+*.parquet
+*.tmp
+
+# Ambientes e cache
+.venv/
+venv/
+__pycache__/
+.cache/
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

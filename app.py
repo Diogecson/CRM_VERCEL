@@ -16,7 +16,8 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_super_segura'
-DATABASE = os.environ.get('DATABASE', 'base.db')
+# Usa /tmp no Vercel (FS gravável) e base.db localmente
+DATABASE = os.environ.get('DATABASE', '/tmp/base.db' if os.environ.get('VERCEL') else 'base.db')
 
 
 COLUNAS = [

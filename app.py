@@ -1049,3 +1049,22 @@ if __name__ == '__main__':
     criar_tabela_contatos()
     # Execução local
     app.run(debug=True)
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    try:
+        import traceback
+        print("[ERROR]", repr(e))
+        traceback.print_exc()
+    except Exception:
+        pass
+    return "Internal Server Error", 500
+
+@app.route('/health')
+def health():
+    return jsonify({
+        "status": "ok",
+        "database": DATABASE,
+        "tmp_exists": os.path.isdir('/tmp')
+    })

@@ -1010,6 +1010,15 @@ def editar_contato(id):
     )
 
 
+# Inicialização do banco para ambientes serverless
+@app.before_first_request
+def _init_db_on_first_request():
+    try:
+        criar_tabela_usuarios()
+        popular_usuarios()
+    except Exception:
+        pass
+
 if __name__ == '__main__':
     criar_tabela_usuarios()
     popular_usuarios()

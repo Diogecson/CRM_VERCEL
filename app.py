@@ -17,7 +17,7 @@ import os
 app = Flask(__name__)
 app.secret_key = 'chave_secreta_super_segura'
 # Usa /tmp no Vercel (FS gravável) e base.db localmente
-DATABASE = os.environ.get('DATABASE', '/tmp/base.db' if os.environ.get('VERCEL') else 'base.db')
+DATABASE = os.environ.get('DATABASE') or ('/tmp/base.db' if os.path.isdir('/tmp') else 'base.db')
 
 
 COLUNAS = [
@@ -70,6 +70,28 @@ def popular_usuarios():
         cursor.execute("INSERT OR IGNORE INTO usuarios (usuario, senha, tipo) VALUES (?, ?, ?)",
                        (nome, "123", "consultor"))
 
+    conn.commit()
+    conn.close()
+
+
+def criar_tabela_contatos():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS contatos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Nome TEXT,
+            Telefone TEXT,
+            Email TEXT,
+            Base TEXT,
+            Base_disponibilizada TEXT,
+            Consultor TEXT,
+            Status_aluno TEXT,
+            Primeiro_contato TEXT,
+            Segundo_contato TEXT,
+            Finalizado TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -688,7 +710,7 @@ def dashboard_relatorio():
 
 @app.route("/dashboard-completo", endpoint='dashboard_completo')
 def interativo():
-    conn = sqlite3.connect("base.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -832,7 +854,7 @@ def interativo():
 
 @app.route('/dashboard-tabela')
 def dashboard_tabela():
-    conn = sqlite3.connect('base.db')
+    conn = get_db_connection()
     df = pd.read_sql_query("SELECT * FROM contatos", conn)
     conn.close()
 
@@ -871,7 +893,7 @@ def remover_duplicados():
                 continue
         return datetime.max
 
-    conn = sqlite3.connect("base.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -1017,11 +1039,13 @@ def _init_db_on_first_request():
     try:
         criar_tabela_usuarios()
         popular_usuarios()
+        criar_tabela_contatos()
     except Exception:
         pass
 
 if __name__ == '__main__':
     criar_tabela_usuarios()
     popular_usuarios()
+    criar_tabela_contatos()
     # Execução local
     app.run(debug=True)
